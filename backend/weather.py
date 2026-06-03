@@ -55,6 +55,55 @@ async def fetch_forecast():
     # hourly_data is a dict of lists / pandas dataframes
     # Hourly dataframe up to 168 hours (7 days) from this instant
     hourly_dataframe = pd.DataFrame(data = hourly_data)
+    # Need to change df column names to SQL/ORM names
+    hourly_dataframe.rename(columns={
+        # wind speeds -> feet-based ORM names
+        'wind_speed_1000hPa': 'wind_speed_110',
+        'wind_speed_975hPa':  'wind_speed_320',
+        'wind_speed_950hPa':  'wind_speed_500',
+        'wind_speed_925hPa':  'wind_speed_800',
+        'wind_speed_900hPa':  'wind_speed_1000',
+        'wind_speed_850hPa':  'wind_speed_1500',
+        'wind_speed_800hPa':  'wind_speed_1900',
+        'wind_speed_700hPa':  'wind_speed_3200',
+        'wind_speed_600hPa':  'wind_speed_4200',
+        'wind_speed_500hPa':  'wind_speed_5600',
+        'wind_speed_400hPa':  'wind_speed_7200',
+        'wind_speed_300hPa':  'wind_speed_9200',
+        'wind_speed_250hPa':  'wind_speed_10400',
+        'wind_speed_200hPa':  'wind_speed_11800',
+        'wind_speed_50hPa':   'wind_speed_13500',
+        'wind_speed_150hPa':  'wind_speed_15800',
+        'wind_speed_100hPa':  'wind_speed_17700',
+        'wind_speed_70hPa':   'wind_speed_19300',
+        'wind_speed_30hPa':   'wind_speed_22000',
+
+        # wind directions -> ORM names
+        'wind_direction_1000hPa': 'wind_dir_110',
+        'wind_direction_975hPa':  'wind_dir_320',
+        'wind_direction_950hPa':  'wind_dir_500',
+        'wind_direction_925hPa':  'wind_dir_800',
+        'wind_direction_900hPa':  'wind_dir_1000',
+        'wind_direction_850hPa':  'wind_dir_1500',
+        'wind_direction_800hPa':  'wind_dir_1900',
+        'wind_direction_700hPa':  'wind_dir_3200',
+        'wind_direction_600hPa':  'wind_dir_4200',
+        'wind_direction_500hPa':  'wind_dir_5600',
+        'wind_direction_400hPa':  'wind_dir_7200',
+        'wind_direction_300hPa':  'wind_dir_9200',
+        'wind_direction_250hPa':  'wind_dir_10400',
+        'wind_direction_200hPa':  'wind_dir_11800',
+        'wind_direction_50hPa':   'wind_dir_13500',
+        'wind_direction_150hPa':  'wind_dir_15800',
+        'wind_direction_100hPa':  'wind_dir_17700',
+        'wind_direction_70hPa':   'wind_dir_19300',
+        'wind_direction_30hPa':   'wind_dir_22000',
+
+        # keep other helpful columns as-is (you can rename these later if needed)
+        'temperature_2m': 'temperature',
+        'surface_pressure': 'pressure',
+    }, inplace=True)
+
     # print("\nHourly data\n", hourly_dataframe)
 
     return hourly_dataframe

@@ -23,6 +23,8 @@ class Simulations(Base):
     distance_nm: Mapped[float] = mapped_column(nullable=False)
     max_wind_mph: Mapped[float] = mapped_column(nullable=False)
     within_safe_zone: Mapped[bool] = mapped_column(nullable=False)
+    temperature: Mapped[float] = mapped_column(nullable=False)
+    Pressure: Mapped[float] = mapped_column(nullable=False)
 
     wind_speed_110: Mapped[float]
     wind_dir_110: Mapped[float]
@@ -81,7 +83,7 @@ class Simulations(Base):
     wind_speed_22000: Mapped[float]
     wind_dir_22000: Mapped[float]
 
-# All the forecasted winds at different altitudes in feet
+# All the forecasted winds at different altitudes in metres
 class Forecasts(Base):
     __tablename__ = "forecasts"
 
@@ -90,6 +92,8 @@ class Forecasts(Base):
     forecast_hour: Mapped[datetime.datetime] = mapped_column(nullable=False) #I'm not sure what the difference here is between the one before
     max_wind_mph: Mapped[float]
     wind_dir_deg: Mapped[float]
+    temperature: Mapped[float]
+    Pressure: Mapped[float]
 
     wind_speed_110: Mapped[float]
     wind_dir_110: Mapped[float]
