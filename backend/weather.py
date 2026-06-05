@@ -1,10 +1,12 @@
 import openmeteo_requests
 
 import pandas as pd
+import numpy as np
+import datetime
 import requests_cache
 from retry_requests import retry
 
-async def fetch_forecast():
+async def fetch_forecast(latitude, longitude):
     # Setup the Open-Meteo API client with cache and retry on error
     cache_session = requests_cache.CachedSession('.cache', expire_after = 3600)
     retry_session = retry(cache_session, retries = 5, backoff_factor = 0.2)
@@ -13,8 +15,8 @@ async def fetch_forecast():
     # The order of variables in hourly or daily is important to assign them correctly below
     url = "https://api.open-meteo.com/v1/forecast"
     params = {
-        "latitude": 47.965378,
-        "longitude": -81.873536,
+        "latitude": latitude,
+        "longitude": longitude,
         "hourly": ["wind_speed_1000hPa", "wind_speed_975hPa", "wind_speed_950hPa", "wind_speed_925hPa", "wind_speed_900hPa", 
                    "wind_speed_850hPa", "wind_speed_800hPa", "wind_speed_700hPa", "wind_speed_600hPa", "wind_speed_500hPa", 
                    "wind_speed_400hPa", "wind_speed_300hPa", "wind_speed_250hPa", "wind_speed_200hPa", "wind_speed_50hPa", 
@@ -28,8 +30,11 @@ async def fetch_forecast():
         "forecast_hours": 168,
     }
 
+    # This is a list of openmeteo_sdk.WeatherApiResponse.WeatherApiResponse objects
+    # Each ovject is 1 location; there should only be 1 location here which is Timmins
     responses = openmeteo.weather_api(url, params = params)
-    print(responses)
+    fetched_time = datetime.datetime.now()
+
 
     # Process first location. Add a for-loop for multiple locations or weather models
     response = responses[0]
@@ -41,23 +46,26 @@ async def fetch_forecast():
     hourly = response.Hourly()
 
     hourly_data = {
-        "date": pd.date_range(
+        "fetched_time": np.full(params["forecast_hours"],fetched_time),
+        "forecast_hour": pd.date_range(
             start = pd.to_datetime(hourly.Time(), unit = "s", utc = True),
             end =   pd.to_datetime(hourly.TimeEnd(), unit = "s", utc = True),
             freq =  pd.Timedelta(seconds = hourly.Interval()),
+            # Include the left / first or current value
             inclusive = "left"
         ).tz_convert(response.Timezone().decode())
     }
 
     for idx, parameter in enumerate(params["hourly"]):
         hourly_data[parameter] = hourly.Variables(idx).ValuesAsNumpy()
+        
 
     # hourly_data is a dict of lists / pandas dataframes
     # Hourly dataframe up to 168 hours (7 days) from this instant
     hourly_dataframe = pd.DataFrame(data = hourly_data)
     # Need to change df column names to SQL/ORM names
     hourly_dataframe.rename(columns={
-        # wind speeds -> feet-based ORM names
+        # wind speeds -> metre-based ORM names
         'wind_speed_1000hPa': 'wind_speed_110',
         'wind_speed_975hPa':  'wind_speed_320',
         'wind_speed_950hPa':  'wind_speed_500',
