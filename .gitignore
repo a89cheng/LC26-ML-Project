@@ -7,3 +7,4 @@ env/
 .env
 .cache.sqlite
 backend/.cache.sqlite
+.DS_Store
