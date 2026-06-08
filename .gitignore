@@ -1,5 +1,9 @@
 .venv/
+.venv331/
+.venv331
 venv/
 ENV/
 env/
 .env
+.cache.sqlite
+backend/.cache.sqlite
