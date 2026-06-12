@@ -6,6 +6,7 @@ import pandas as pd
 
 def run_predictions(forecast_data):
 	forecast_dataframe = to_dataframe(forecast_data)
+	parameters_forecast_dataframe = forecast_dataframe.drop(columns=["id", "fetched_time", "forecast_hour"])
 
 	model_names = ["model_main_distance", "model_main_latitude", "model_main_longitude",
         "model_drogue_distance", "model_drogue_latitude", "model_drogue_longitude",
@@ -18,33 +19,38 @@ def run_predictions(forecast_data):
 		model = joblib.load(f"ml_models/{name}.joblib")
 		loaded_models[name] = model
 	
-	# Name of model : [[prediction column] , [RMS, R^2], timestamp] 
-	results = {}
+	results = {
+		"standard" : {},
+		"drogue_only" : {},
+		"ballistic" : {}
+	}
 
 	# Each model will return a COLUMN as a list
 	for name, model in loaded_models.items():
-		column = model.predict(forecast_dataframe)
-		results[model] = [column, lookup_accuracy(name), datetime.now()] 
+		column = model.predict(parameters_forecast_dataframe)
+		results[get_deployment_type(name)][get_target_column(name)] = column
+        
 
 	return results 
 
+def get_target_column(model_name: str) -> str:
+    if model_name.endswith("_distance"):
+        return "predicted_dist_nm"
+    elif model_name.endswith("_latitude"):
+        return "landing_lat"
+    elif model_name.endswith("_longitude"):
+        return "landing_lon"
 
-def lookup_accuracy(model_name):
-	rms_r2_values = {
-		"model_main_distance": [0.5941581098089428, 0.8967763807664032],
-		"model_main_latitude": [0.013362417368037857, 0.9639279651474006],
-		"model_main_longitude": [0.012593585732728941, 0.9704828081076198],
+    raise ValueError(f"Unknown model: {model_name}")
 
-		"model_drogue_distance": [0.26308866794816776, 0.9383076216292607],
-		"model_drogue_latitude": [0.004852698418652511, 0.9313476615413283],
-		"model_drogue_longitude": [0.007384831731377218, 0.9488180896969025],
-
-		"model_ballistic_distance": [0.22841182059386442, 0.9760741175566592],
-		"model_ballistic_latitude": [0.009483387312628664, 0.8413115300524789],
-		"model_ballistic_longitude": [0.009040553192137498, 0.94463293187803],
-	}
-	return [rms_r2_values[model_name]]
-
+def get_deployment_type(model_name: str) -> str:
+    if model_name.startswith("model_main_"):
+        return "standard"
+    elif model_name.startswith("model_drogue_"):
+        return "drogue_only"
+    elif model_name.startswith("model_ballistic_"):
+        return "ballistic"
+    raise ValueError(f"Unknown model: {model_name}")
 
 def to_dataframe(forecast_data):
 	"""
