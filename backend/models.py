@@ -21,10 +21,9 @@ class Simulations(Base):
     landing_lon: Mapped[float] = mapped_column(nullable=False)
     apogee_ft: Mapped[float] = mapped_column(nullable=False)
     distance_nm: Mapped[float] = mapped_column(nullable=False)
-    max_wind_mph: Mapped[float] = mapped_column(nullable=False)
     within_safe_zone: Mapped[bool] = mapped_column(nullable=False)
     temperature: Mapped[float] = mapped_column(nullable=False)
-    Pressure: Mapped[float] = mapped_column(nullable=False)
+    pressure: Mapped[float] = mapped_column(nullable=False)
 
     wind_speed_110: Mapped[float]
     wind_dir_110: Mapped[float]
@@ -90,10 +89,8 @@ class Forecasts(Base):
     id : Mapped[int] = mapped_column(primary_key=True)
     fetched_time: Mapped[datetime.datetime] = mapped_column(nullable=False)
     forecast_hour: Mapped[datetime.datetime] = mapped_column(nullable=False) #I'm not sure what the difference here is between the one before
-    max_wind_mph: Mapped[float]
-    wind_dir_deg: Mapped[float]
     temperature: Mapped[float]
-    Pressure: Mapped[float]
+    pressure: Mapped[float]
 
     wind_speed_110: Mapped[float]
     wind_dir_110: Mapped[float]
@@ -160,6 +157,7 @@ class Predictions(Base):
     forecast_id: Mapped[int] = mapped_column(ForeignKey("forecasts.id"))
     predicted_at: Mapped[datetime.datetime] = mapped_column(nullable=False)
     forecast_hour: Mapped[datetime.datetime] = mapped_column(nullable=False)
+    scenario: Mapped[str] = mapped_column(nullable=False)
 
     landing_lat: Mapped[float]
     landing_lon: Mapped[float]
