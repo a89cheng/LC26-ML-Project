@@ -107,7 +107,6 @@ async def fetch_forecast(latitude, longitude):
         'wind_direction_70hPa':   'wind_dir_19300',
         'wind_direction_30hPa':   'wind_dir_22000',
 
-        # keep other helpful columns as-is (you can rename these later if needed)
         'temperature_2m': 'temperature',
         'surface_pressure': 'pressure',
     }, inplace=True)

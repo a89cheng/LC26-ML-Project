@@ -4,7 +4,7 @@ from fastapi import FastAPI
 from contextlib import asynccontextmanager
 
 from database import create_tables
-from pipeline import start_scheduler
+from pipeline import (start_scheduler, scheduler)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -14,7 +14,8 @@ async def lifespan(app: FastAPI):
     await start_scheduler()
 
     yield
-    start_scheduler.shutdown()
+    scheduler.shutdown()
+
 
     print("Goodbye")
 

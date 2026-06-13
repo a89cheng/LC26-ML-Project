@@ -5,6 +5,8 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from dotenv import load_dotenv
 
+# Check on the database tables: docker exec -it dispersionanalysisv2-db-1 psql -U postgres -d launchwindow
+
 # Load variables from .env
 BASE_DIR = Path(__file__).resolve().parent.parent  # project root
 load_dotenv(BASE_DIR / ".env")
@@ -32,6 +34,6 @@ def get_db():
         db.close()
 
 def create_tables():
-    from backend.models import Base
+    from models import Base
     # Create tables; can be done directly with the engine
     Base.metadata.create_all(bind=engine)

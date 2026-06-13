@@ -31,7 +31,7 @@ def run_predictions(forecast_data):
 		results[get_deployment_type(name)][get_target_column(name)] = column
         
 
-	return results 
+	return forecast_dataframe[["id", "forecast_hour"]], results 
 
 def get_target_column(model_name: str) -> str:
     if model_name.endswith("_distance"):

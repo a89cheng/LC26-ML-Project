@@ -163,15 +163,10 @@ class Predictions(Base):
     landing_lon: Mapped[float]
     predicted_dist_nm: Mapped[float]
 
-    # The following 3 metrics are used to draw the prediction ellipses around landings
-    ellipse_major_deg: Mapped[float]
-    ellipse_minor_deg: Mapped[float]
-    ellipse_tilt_deg: Mapped[float]
-
     # Is from 0 - 1 (%)
     p_safe_launch: Mapped[float]
     go_no_go: Mapped[bool]
 
     # Altitude with the greatest risk / risk factor
-    top_risk_altitude: Mapped[int] 
-    top_risk_factor: Mapped[float]
+    top_risk_altitude: Mapped[int] = mapped_column(nullable=True)
+    top_risk_factor: Mapped[float] = mapped_column(nullable=True)
