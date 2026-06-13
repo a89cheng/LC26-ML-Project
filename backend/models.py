@@ -4,6 +4,7 @@ from sqlalchemy.orm import Mapped
 from sqlalchemy.orm import mapped_column
 from sqlalchemy.orm import relationship
 
+from sqlalchemy import UniqueConstraint
 from sqlalchemy import Time, DateTime, func
 import datetime
 
@@ -88,7 +89,7 @@ class Forecasts(Base):
 
     id : Mapped[int] = mapped_column(primary_key=True)
     fetched_time: Mapped[datetime.datetime] = mapped_column(nullable=False)
-    forecast_hour: Mapped[datetime.datetime] = mapped_column(nullable=False) #I'm not sure what the difference here is between the one before
+    forecast_hour: Mapped[datetime.datetime] = mapped_column(nullable=False, unique=True) 
     temperature: Mapped[float]
     pressure: Mapped[float]
 
@@ -152,6 +153,7 @@ class Forecasts(Base):
 
 class Predictions(Base):
     __tablename__ = "predictions"
+    __table_args__ = (UniqueConstraint('forecast_id', 'scenario', 'forecast_hour'),)
 
     id: Mapped[int] = mapped_column(primary_key=True)
     forecast_id: Mapped[int] = mapped_column(ForeignKey("forecasts.id"))
