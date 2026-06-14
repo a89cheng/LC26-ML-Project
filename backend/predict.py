@@ -27,10 +27,12 @@ def run_predictions(forecast_data):
 
 	# Each model will return a COLUMN as a list
 	for name, model in loaded_models.items():
-		column = model.predict(parameters_forecast_dataframe)
+		print("Model expects:", model.get_booster().feature_names)
+        # Ensure that all the columns are in the same order as the model trained!
+		feature_columns = model.get_booster().feature_names
+		column = model.predict(parameters_forecast_dataframe[feature_columns])
 		results[get_deployment_type(name)][get_target_column(name)] = column
         
-
 	return forecast_dataframe[["id", "forecast_hour"]], results 
 
 def get_target_column(model_name: str) -> str:

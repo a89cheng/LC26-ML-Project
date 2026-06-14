@@ -25,7 +25,6 @@ async def start_scheduler():
 async def run_pipeline():
     # Fetch the forecast API data and immediately put it into the database
     forecast_df = await fetch_forecast(latitude= 47.965378, longitude= -81.873536)
-    print(forecast_df.shape[0])
     insert_forecasts(forecast_df)
     print('forecasts inserted')
     
@@ -102,17 +101,6 @@ def insert_forecasts(forecast_dataframe):
 
 
 def extract_predictive_forecasts(most_recent_fetch_time):
-    predictive_columns = [
-        "id", "forecast_hour", "temperature", "pressure",
-        "wind_speed_110", "wind_dir_110", "wind_speed_320", "wind_dir_320", "wind_speed_500",
-        "wind_dir_500", "wind_speed_800", "wind_dir_800", "wind_speed_1000", "wind_dir_1000",
-        "wind_speed_1500", "wind_dir_1500", "wind_speed_1900", "wind_dir_1900", "wind_speed_3200",
-        "wind_dir_3200", "wind_speed_4200", "wind_dir_4200", "wind_speed_5600", "wind_dir_5600",
-        "wind_speed_7200", "wind_dir_7200", "wind_speed_9200", "wind_dir_9200", "wind_speed_10400",
-        "wind_dir_10400", "wind_speed_11800", "wind_dir_11800", "wind_speed_13500", "wind_dir_13500",
-        "wind_speed_15800", "wind_dir_15800", "wind_speed_17700", "wind_dir_17700", "wind_speed_19300",
-        "wind_dir_19300", "wind_speed_22000", "wind_dir_22000",
-    ]
     stmt = (
         # Forecasts instead of forecasts since the class name maps to the table accordingly
         select(Forecasts)
@@ -155,7 +143,24 @@ def insert_predictions(predictions_df):
     # Orienting in records allows for each row to a dict in a list representing the whole table
     predictions = predictions_df.to_dict(orient='records')
 
+    # The columns in question:
+    column_names = [
+        "predicted_at", "scenario", "landing_lat", "landing_lon", 
+        "predicted_dist_nm", "p_safe_launch", "go_no_go"
+    ]
+
     stmt = insert(my_table).values(predictions)
 
+    upsert_stmt = stmt.on_conflict_do_update(
+        # The conflict target:
+        index_elements=['forecast_id', 'scenario', 'forecast_hour'],
+
+        # Columns that should be updated
+        set_={
+            column : getattr(stmt.excluded, column) for column in column_names
+        }
+    )
+
+    # After the statment has been built, execute it!
     with engine.begin() as conn:
-        conn.execute(stmt)
+        conn.execute(upsert_stmt)
