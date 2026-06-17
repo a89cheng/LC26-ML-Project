@@ -111,6 +111,8 @@ async def fetch_forecast(latitude, longitude):
         'surface_pressure': 'pressure',
     }, inplace=True)
 
-    # print("\nHourly data\n", hourly_dataframe)
+    hourly_dataframe = hourly_dataframe[
+        hourly_dataframe['forecast_hour'].dt.hour.between(11, 18)
+    ]
 
     return hourly_dataframe
