@@ -1,6 +1,7 @@
 /* import logo from "./assets/RocketryLogo.png";*/
 import Header from "./components/Header"
 import SafetyGauge from "./components/SafetyGauge"
+import TimelineBar from "./components/TimelineBar"
 
 function App() {
     return (
@@ -12,6 +13,11 @@ function App() {
             </div>
             <div className="w-1/3 flex">
                 <SafetyGauge />
+            </div>
+        </div>
+        <div>
+            <div className=''>
+                <TimelineBar />
             </div>
         </div>
     </div>
