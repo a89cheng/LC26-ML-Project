@@ -11,10 +11,16 @@ export const mockHours = Array.from({ length: 168 }, (_, i) => {
 
 const altitudes = [110, 320, 500, 800, 1000, 1500, 1900, 3200, 4200, 5600, 7200, 9200, 10400, 11800, 13500, 15800, 17700, 19300, 22000]
 
-export const mockAltitudes = altitudes.map(altitude => ({
-    altitude: altitude,
-    windSpeed: altitude < 1000 ? Math.random() * 30 :
-           altitude < 5000 ? Math.random() * 60 :
-           Math.random() * 150,
-    windDirection: Math.floor(Math.random() * 360),
-}))
+// 56 sets of wind-altitude data for 56 hours or 7 days of 8 hours 
+export const mockAltitudes = Object.fromEntries(
+    Array.from({ length: 56 }, (_, i) => [
+        i + 1,
+        altitudes.map(altitude => ({
+            altitude,
+            windSpeed: altitude < 1000 ? Math.random() * 30 :
+                       altitude < 5000 ? Math.random() * 60 :
+                       Math.random() * 150,
+            windDirection: Math.floor(Math.random() * 360),
+        }))
+    ])
+)
