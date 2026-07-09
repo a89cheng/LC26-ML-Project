@@ -1,8 +1,9 @@
 #Run with: uvicorn main:app --reload
-
+from datetime import datetime
 from fastapi import (FastAPI, Depends)
 from contextlib import asynccontextmanager
-from sqlalchemy import select
+from sqlalchemy import select, func 
+# Func is for aggregate functions!
 
 from database import create_tables, get_db
 from pipeline import (start_scheduler, scheduler)
@@ -18,8 +19,7 @@ async def lifespan(app: FastAPI):
     yield
     scheduler.shutdown()
 
-
-    print("Goodbye")
+    print("Gone Fishing")
 
 app = FastAPI(lifespan=lifespan)
 
@@ -29,27 +29,81 @@ def health():
 
 @app.get("/predictions")
 def get_predictions(session = Depends(get_db)): # Depends closes the yield statement!
+    recent_fetched_time = select(func.max(Forecasts.fetched_time)).scalar_subquery()
+
     stmt = (
         select(Forecasts, Predictions)
         .join(Predictions, Forecasts.id == Predictions.forecast_id)
-        #.where(Predictions.fetched_time == recent_fetched_time)
-        .group_by(Predictions.forecast_hour, Predictions.scenario)
+        .where(Forecasts.fetched_time == recent_fetched_time)
+        .order_by(Forecasts.forecast_hour.asc())
     )
+
+    results = session.execute(stmt).all()
+
+    data = []
+    pred_cols = ["forecast_hour", "scenario", "landing_lat", "landing_lon", "predicted_dist_nm", "p_safe_launch" , "go_no_go"]
+    # Groups of 3 rows, same forecast data but different prediction
+    # Constraint of 3 * 56 = 168 predictions for a 7 day span
+    for prediction_row in results:
+        row = {}
+        for column in pred_cols:
+            row[column] = getattr(prediction_row[1], column)
+        data.append(row)
+
+    return data
+
+
+@app.get("/predictions/{forecast_hour}")
+def get_a_prediction(forecast_hour:datetime, session = Depends(get_db)):
+    recent_fetched_time = select(func.max(Forecasts.fetched_time)).scalar_subquery()
+
+    stmt = (
+        select(Forecasts, Predictions)
+        .join(Predictions, Forecasts.id == Predictions.forecast_id)
+        .where(Forecasts.fetched_time == recent_fetched_time, Forecasts.forecast_hour == forecast_hour)
+    )
+
+    # There should be 3 predictions per hour
+    results = session.execute(stmt).all()
+
+    data = []
+    pred_cols = ["forecast_hour", "scenario", "landing_lat", "landing_lon", "predicted_dist_nm", "p_safe_launch" , "go_no_go"]
+    # Groups of 3 rows, same forecast data but different prediction
+    # Constraint of 3 * 56 = 168 predictions for a 7 day span
+    for prediction_row in results:
+        row = {}
+        for column in pred_cols:
+            row[column] = getattr(prediction_row[1], column)
+        data.append(row)
+
+    return data
+
+@app.get("/forecasts")
+def get_all_forecasts(session = Depends(get_db)):
+    recent_fetched_time = select(func.max(Forecasts.fetched_time)).scalar_subquery()
+
+    stmt = (
+        select(Forecasts)
+        .where(Forecasts.fetched_time == recent_fetched_time)
+        .order_by(Forecasts.forecast_hour.asc())
+    )
+
     results = session.scalars(stmt).all()
 
     return results
 
-@app.get("/predictions/{forecast_hour}")
-def get_a_prediction():
-    pass
-
-@app.get("/forecasts")
-def get_all_forecasts():
-    pass
-
 @app.get("/forecasts/{forecast_hour}")
-def get_a_forecast():
-    pass 
+def get_a_forecast(forecast_hour:datetime, session = Depends(get_db)):
+    recent_fetched_time = select(func.max(Forecasts.fetched_time)).scalar_subquery()
+
+    stmt = (
+        select(Forecasts)
+        .where(Forecasts.fetched_time == recent_fetched_time, Forecasts.forecast_hour == forecast_hour)
+    )
+
+    results = session.scalars(stmt).one_or_none()
+
+    return results
 
 @app.get("/model-information")
 def get_model_information():
