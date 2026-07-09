@@ -27,7 +27,6 @@ def run_predictions(forecast_data):
 
 	# Each model will return a COLUMN as a list
 	for name, model in loaded_models.items():
-		print("Model expects:", model.get_booster().feature_names)
         # Ensure that all the columns are in the same order as the model trained!
 		feature_columns = model.get_booster().feature_names
 		column = model.predict(parameters_forecast_dataframe[feature_columns])

@@ -26,7 +26,6 @@ async def run_pipeline():
     # Fetch the forecast API data and immediately put it into the database
     forecast_df = await fetch_forecast(latitude= 47.965378, longitude= -81.873536)
     insert_forecasts(forecast_df)
-    print('forecasts inserted')
     
     # Taking the most recent timestamp of when the data was fetched
     most_recent_fetch_time = forecast_df['fetched_time'].iloc[0]
@@ -35,27 +34,23 @@ async def run_pipeline():
     try:
         # In the format of each row being an index of the table object
         forecasts = db.execute(extract_predictive_forecasts(most_recent_fetch_time)).scalars().all()
-        print(f"Queried {len(forecasts)} forecast rows from DB")
     finally:
         db.close()
 
     try:
         # returns a dict in the format: Name of model : [[prediction column] , [RMS, R^2], timestamp] 
         metadata_df, predictions = run_predictions(forecasts)
-        print(f"Prediction keys: {predictions.keys()}")
     except Exception as e:
         import traceback
-        traceback.print_exc()
+
         return
 
     predictions_df = predictions_to_dataframe(metadata_df, predictions)
     predictions_df['p_safe_launch'] = ((1 - predictions_df['predicted_dist_nm']) / 10).clip(lower=0) # minimum threshold
     predictions_df['go_no_go'] = predictions_df['predicted_dist_nm'] < 10
     predictions_df['predicted_at'] = datetime.now()
-    print(f"Predictions DataFrame shape: {predictions_df.shape}")
 
     insert_predictions(predictions_df)
-    print('Predictions inserted')
 
 def insert_forecasts(forecast_dataframe):
     # Allows understanding of db tables as python objects
