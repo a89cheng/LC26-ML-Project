@@ -35,7 +35,7 @@ function usePredictions() {
 
     fetchPredictions(); // run once immediately
 
-    // Set an interval for running this I presume? 
+    // Set an interval for running the function in milliseconds 
     const intervalId = setInterval(fetchPredictions, 60000); 
 
     return () => {
@@ -47,4 +47,44 @@ function usePredictions() {
   return state; // return the variable in form: { data, loading, error }
 }
 
-export default usePredictions;
+function usePrediction (forecastHour) {
+    const [state, setState] = useState({ data: [], loading: true, error: null });
+    const API_BASE_URL = 'http://127.0.0.1:8000';
+
+    useEffect(() => {
+        // Use protection!
+        let isMounted = true;
+
+        if (!forecastHour) {
+            setState({ data: [], loading: false, error: null });
+            return;
+        }
+
+        const fetchPrediction = () => {
+            fetch(`${API_BASE_URL}/predictions/${forecastHour}`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error (`Server responded with status ${response.status}`);
+                } else {
+                    return response.json()
+                }
+            })
+            .then(data => {
+                if (isMounted) {
+                    setState({ data, loading: false, error: null });
+                }
+            })
+            .catch(error => {
+            if (isMounted) {
+                setState({ data: [], loading: false, error: error.message });
+            }})
+        }
+        
+        fetchPrediction(forecastHour);
+    }, [forecastHour])
+
+    return state;
+}
+
+// Export both hooks!
+export default {usePrediction, usePredictions};
