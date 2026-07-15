@@ -1,6 +1,5 @@
 import { useState } from "react"
 import { useEffect, useRef } from "react"
-import { mockAltitudes } from "../mock_data.jsx"
 import {
     Chart, LineController,
     LineElement, PointElement,
@@ -15,8 +14,16 @@ Chart.register(
     Tooltip, Title
 )
 
+const altitudes = [110, 320, 500, 800, 1000, 1500, 1900, 3200, 4200, 5600, 7200, 9200, 10400, 11800, 13500, 15800, 17700, 19300, 22000]
 
-function WindProfileChart () {
+function forecastToWindProfile(forecastHour) {
+    return altitudes.map(alt => ({
+        altitude: alt,
+        windSpeed: forecastHour[`wind_speed_${alt}`],
+    }))
+}
+
+function WindProfileChart ( {weather} ) {
     // Initially set to null since canvas not made yet
     const canvasRef = useRef(null)
     const [times, updateTimes] = useState(1)
@@ -36,16 +43,18 @@ function WindProfileChart () {
             type: "line",
             data: {
                 datasets: Array.from({ length: times }, (_, i) => {
+                    if (!weather[i]) return null
+
                     const hour = i + 1
                     const color = `hsl(${(hour / times) * 240}, 70%, 60%)`
                     return {
-                        data: mockAltitudes[hour].map(d => ({ x: d.windSpeed, y: d.altitude })),
+                        data: forecastToWindProfile(weather[i]).map(d => ({ x: d.windSpeed, y: d.altitude })),
                         borderColor: color,
                         backgroundColor: color,
                         pointRadius: 2,
                         tension: 0,
                     }
-                })
+                }).filter(Boolean)
             },
             options: {
                 plugins: {
@@ -71,7 +80,7 @@ function WindProfileChart () {
         })
 
         return () => chart.destroy()
-    }, [times])
+    }, [times, weather])
 
     return (
         <div className="bg-[#111827] border border-[#1e293b] rounded-xl p-4">
@@ -95,4 +104,4 @@ function WindProfileChart () {
     )
 }
 
-export default WindProfileChart 
+export default WindProfileChart
