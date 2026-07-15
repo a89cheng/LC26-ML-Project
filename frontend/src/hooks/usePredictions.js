@@ -22,6 +22,7 @@ function usePredictions() {
         // change the loading to false, since it the response has returned
         // if the data exits, it replaces the empty data array, and if not, error message!
         .then(data => {
+          console.log(data[0].forecast_hour);
           if (isMounted) {
             setState({ data, loading: false, error: null });
           }

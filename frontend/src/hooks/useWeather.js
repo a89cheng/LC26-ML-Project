@@ -35,10 +35,9 @@ function useWeather () {
             isMounted = false;
             clearInterval(intervalId);
         };
-
-        return state;
-
     }, [])
+    
+    return state;
 }
-setInterval
+
 export default useWeather;
