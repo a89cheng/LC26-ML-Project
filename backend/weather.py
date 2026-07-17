@@ -33,7 +33,7 @@ async def fetch_forecast(latitude, longitude):
     # This is a list of openmeteo_sdk.WeatherApiResponse.WeatherApiResponse objects
     # Each ovject is 1 location; there should only be 1 location here which is Timmins
     responses = openmeteo.weather_api(url, params = params)
-    fetched_time = datetime.datetime.now()
+    fetched_time = datetime.datetime.now(datetime.timezone.utc)
 
 
     # Process first location. Add a for-loop for multiple locations or weather models
@@ -49,7 +49,7 @@ async def fetch_forecast(latitude, longitude):
             freq =  pd.Timedelta(seconds = hourly.Interval()),
             # Include the left / first or current value
             inclusive = "left"
-        ).tz_convert(response.Timezone().decode())
+        )
     }
 
     for idx, parameter in enumerate(params["hourly"]):
@@ -108,7 +108,7 @@ async def fetch_forecast(latitude, longitude):
     }, inplace=True)
 
     hourly_dataframe = hourly_dataframe[
-        hourly_dataframe['forecast_hour'].dt.hour.between(11, 18)
+        hourly_dataframe["forecast_hour"].dt.hour.between(15, 22)
     ]
-
+    # Filtered launch window: 11 AM - 6 PM local time for next 7 days
     return hourly_dataframe

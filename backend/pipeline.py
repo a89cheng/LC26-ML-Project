@@ -42,7 +42,7 @@ async def run_pipeline():
         metadata_df, predictions = run_predictions(forecasts)
     except Exception as e:
         import traceback
-
+        traceback.print_exc()
         return
 
     predictions_df = predictions_to_dataframe(metadata_df, predictions)
@@ -76,7 +76,7 @@ def insert_forecasts(forecast_dataframe):
         "wind_dir_19300", "wind_speed_22000", "wind_dir_22000",
     ]
 
-    # Upsert Statement 
+    # Upsert Statement go_
     stmt = insert(my_table).values(forecasts)
     upsert_stmt = stmt.on_conflict_do_update( 
         # The conflict target:

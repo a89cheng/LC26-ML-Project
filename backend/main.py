@@ -1,6 +1,9 @@
-#Run with: uvicorn main:app --reload
+# Run with: uvicorn main:app --reload
+# CORS issue I had: https://stackoverflow.com/questions/43871637/no-access-control-allow-origin-header-is-present-on-the-requested-resource-whe
+
 from datetime import datetime
 from fastapi import (FastAPI, Depends)
+from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 from sqlalchemy import select, func 
 # Func is for aggregate functions!
@@ -8,6 +11,7 @@ from sqlalchemy import select, func
 from database import create_tables, get_db
 from pipeline import (start_scheduler, scheduler)
 from models import (Simulations, Forecasts, Predictions)
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -22,6 +26,17 @@ async def lifespan(app: FastAPI):
     print("Gone Fishing")
 
 app = FastAPI(lifespan=lifespan)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://127.0.0.1:5173",
+        "http://localhost:5173",
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 @app.get("/")
 def health():
@@ -110,44 +125,58 @@ def get_model_information():
     return {
         "MainAtApogee": {
             "Distance": {
-                "RMS": 0.6292149284861311,
-                "R2": 88.42361239411833
+                "RMS": 0.4357668309650903,
+                "R2": 98.5289024797363
             },
             "Latitude": {
-                "RMS": 0.013263654077880981,
-                "R2": 96.44592203781477
+                "RMS": 0.008949873962128228,
+                "R2": 98.73562002863256
             },
             "Longitude": {
-                "RMS": 0.011005687243833478,
-                "R2": 97.74570594044413
+                "RMS": 0.016541954777753953,
+                "R2": 97.66039100057397
             }
         },
         "DrogueOnly": {
             "Distance": {
-                "RMS": 0.31583345165701154,
-                "R2": 91.10914591704421
+                "RMS": 0.2965928984507634,
+                "R2": 90.93797306202649
             },
             "Latitude": {
-                "RMS": 0.005348296643518714,
-                "R2": 91.6608899390373
+                "RMS": 0.004991054173949448,
+                "R2": 95.40817033110088
             },
             "Longitude": {
-                "RMS": 0.008065801204894939,
-                "R2": 93.89437241174486
+                "RMS": 0.0063404774255936365,
+                "R2": 97.07647530998941
             }
         },
         "Ballistic": {
             "Distance": {
-                "RMS": 0.22822758342949032,
-                "R2": 97.61126992637005
+                "RMS": 0.1902049111228166,
+                "R2": 98.17142721447376
             },
             "Latitude": {
-                "RMS": 0.005529809295388513,
-                "R2": 94.60441293165442
+                "RMS": 0.008381319783534628,
+                "R2": 93.37741209035704
             },
             "Longitude": {
-                "RMS": 0.00618174126394509,
-                "R2": 97.41129142289616
+                "RMS": 0.0060909243200914,
+                "R2": 97.65448201644368
+            }
+        },
+        "Nominal": {
+            "Distance": {
+                "RMS": 0.284404021884833,
+                "R2": 91.32497143653473
+            },
+            "Latitude": {
+                "RMS": 0.004744508413347208,
+                "R2": 95.71783744451988
+            },
+            "Longitude": {
+                "RMS": 0.006620665614412779,
+                "R2": 96.68732409874212
             }
         }
     }

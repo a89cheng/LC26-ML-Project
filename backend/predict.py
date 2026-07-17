@@ -8,9 +8,11 @@ def run_predictions(forecast_data):
 	forecast_dataframe = to_dataframe(forecast_data)
 	parameters_forecast_dataframe = forecast_dataframe.drop(columns=["id", "fetched_time", "forecast_hour"])
 
-	model_names = ["model_main_distance", "model_main_latitude", "model_main_longitude",
+	model_names = [
+        "model_main_distance", "model_main_latitude", "model_main_longitude",
         "model_drogue_distance", "model_drogue_latitude", "model_drogue_longitude",
-        "model_ballistic_distance", "model_ballistic_latitude","model_ballistic_longitude"
+        "model_ballistic_distance", "model_ballistic_latitude","model_ballistic_longitude",
+        "model_nominal_distance", "model_nominal_latitude", "model_nominal_longitude"
 	]
 
 	loaded_models= {}
@@ -20,9 +22,10 @@ def run_predictions(forecast_data):
 		loaded_models[name] = model
 	
 	results = {
-		"standard" : {},
-		"drogue_only" : {},
-		"ballistic" : {}
+		"main": {},
+		"drogue_only": {},
+		"ballistic": {},
+		"nominal": {}
 	}
 
 	# Each model will return a COLUMN as a list
@@ -46,11 +49,14 @@ def get_target_column(model_name: str) -> str:
 
 def get_deployment_type(model_name: str) -> str:
     if model_name.startswith("model_main_"):
-        return "standard"
+        return "main"
     elif model_name.startswith("model_drogue_"):
         return "drogue_only"
     elif model_name.startswith("model_ballistic_"):
         return "ballistic"
+    elif model_name.startswith("model_nominal_"):
+        return "nominal"
+    
     raise ValueError(f"Unknown model: {model_name}")
 
 def to_dataframe(forecast_data):
