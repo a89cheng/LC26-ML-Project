@@ -30,12 +30,12 @@ function WindProfileChart ( {weather} ) {
 
     // Need a state of usage; should be an enum (Next Hour, 4 hours, 8 hours, 16 hours, 24 hours, 56 hours)
     const ranges = [
-        { h: 1,  color: "#efc851ff" },
-        { h: 4,  color: "#60a5fa" },
-        { h: 8,  color: "#34d399" },
-        { h: 16, color: "#f472b6" },
-        { h: 24, color: "#fb923c" },
-        { h: 56, color: "#a78bfa" },
+        { h: 1,  color: "#efc851ff", name:"Hour" },
+        { h: 4,  color: "#60a5fa", name:"4 Hours" },
+        { h: 8,  color: "#34d399", name:"Day" },
+        { h: 16, color: "#f472b6", name:"2 Days" },
+        { h: 24, color: "#fb923c", name:"3 Days" },
+        { h: 56, color: "#a78bfa", name:"Week" },
     ]
 
     useEffect(() => {
@@ -90,16 +90,16 @@ function WindProfileChart ( {weather} ) {
                     {ranges.map(setting => (
                         <button
                             key={setting.h}
-                            className="w-16 font-mono px-2 py-1 rounded-md border text-[#374151] border-[#1e293b]"
+                            className="w-24 font-mono px-2 py-1 rounded-md border text-[#374151] border-[#1e293b]"
                             style={times === setting.h ? { borderColor: setting.color, color: setting.color } : {}}
                             onClick={() => updateTimes(setting.h)}
                         >
-                            {setting.h}hrs
+                            {setting.name}
                         </button>
                     ))}
                 </div>
             </div>
-            <canvas ref={canvasRef} />
+            <canvas ref={canvasRef}/>
         </div>
     )
 }
